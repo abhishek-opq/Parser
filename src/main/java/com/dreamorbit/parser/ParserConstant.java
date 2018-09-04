@@ -6,4 +6,5 @@ public interface ParserConstant {
 	String PASSWORD="root";
 	String SQL_EXCEPTION="";
 	String CNFE_EXCEPTION="";
+	String DRIVER_CLASS="com.mysql.jdbc.Driver";
 }

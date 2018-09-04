@@ -28,6 +28,12 @@
     <artifactId>mysql-connector-java</artifactId>
     <version>5.1.38</version>
 </dependency>
+    <!-- https://mvnrepository.com/artifact/jakarta-regexp/jakarta-regexp -->
+<dependency>
+    <groupId>jakarta-regexp</groupId>
+    <artifactId>jakarta-regexp</artifactId>
+    <version>1.4</version>
+</dependency>
     
     
   </dependencies>
