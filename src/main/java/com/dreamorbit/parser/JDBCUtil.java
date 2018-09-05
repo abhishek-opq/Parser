@@ -2,6 +2,7 @@ package com.dreamorbit.parser;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -43,4 +44,16 @@ public class JDBCUtil {
 		}
 	}
 
+
+	public static void closeResultSet(ResultSet rs) {
+		try {
+			if (null != rs) {
+				rs.close();
+			}
+		} catch (SQLException e) {
+			throw new ParserException(ParserConstant.SQL_EXCEPTION);
+		}
+	}
+	
+	
 }

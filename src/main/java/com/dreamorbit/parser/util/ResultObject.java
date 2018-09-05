@@ -4,7 +4,7 @@ public class ResultObject {
 	private Object object;
 	private long code;
 	private String message;
-	private RuntimeException exception;
+	private Exception exception;
 	public ResultObject(long code) {
 		super();
 		this.code = code;
@@ -27,12 +27,13 @@ public class ResultObject {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	public RuntimeException getException() {
+	public Exception getException() {
 		return exception;
 	}
-	public void setException(RuntimeException exception) {
+	public void setException(Exception exception) {
 		this.exception = exception;
 	}
+	
 	
 	
 
