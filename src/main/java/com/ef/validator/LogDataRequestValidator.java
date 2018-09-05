@@ -1,7 +1,7 @@
-package com.dreamorbit.parser.validator;
+package com.ef.validator;
 
-import com.ef.LogDataRequest;
-import com.ef.ParserConstant;
+import com.ef.data.LogDataRequest;
+import com.ef.util.ParserConstant;
 
 public class LogDataRequestValidator {
 	

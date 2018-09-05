@@ -4,17 +4,20 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import com.dreamorbit.parser.dao.ParserDAO;
-import com.dreamorbit.parser.dao.ParserDAOFactory;
-import com.dreamorbit.parser.util.ResultObject;
-import com.dreamorbit.parser.validator.LogDataRequestValidator;
+import com.ef.dao.ParserDAO;
+import com.ef.dao.ParserDAOFactory;
+import com.ef.data.LogDataRequest;
+import com.ef.util.ParserConstant;
+import com.ef.util.ParserException;
+import com.ef.util.ResultObject;
+import com.ef.validator.LogDataRequestValidator;
 
 public class Parser {
 	static ParserDAO parserDAO = ParserDAOFactory.getParserDAO();
 	//private static final Log logger = LogFactory.getLog("App");
 	public static void main(String[] args) {
 
-		String[] logDataArray = { "--2017-01-01.13:00:00", "-- hourly", "--1" };
+		String[] logDataArray = { "--2017-01-01.13:00:00", "-- hourly", "--200" };
 		String message=insertLogData();
 		printLog(message);
 		LogDataRequest logDataRequest = initLogData(logDataArray);
@@ -28,7 +31,7 @@ public class Parser {
 		
 		
 		List<String> logDataList=getLogData(logDataRequest);
-		printLog("<==========================================LOG DATA==========================================================>");
+		printLog("<==========================================LOG DATA==========================================================>\n\n");
 		if(null!=logDataList && !logDataList.isEmpty()) {
 			for(String logData:logDataList) {
 				printLog(logData);
@@ -36,6 +39,8 @@ public class Parser {
 		}else {
 			throw new ParserException(ParserConstant.RECORD_NOT_FOUND);
 		}
+		printLog("\n\n");
+		printLog("<==========================================LOG DATA ENDS==========================================================> \n\n");
 		if(null!=logDataList && !logDataList.isEmpty()) {
 		String messageStore=storeLogResult(logDataList);
 		printLog(messageStore);
@@ -72,10 +77,10 @@ public class Parser {
 		
 		int thrsld = Integer.parseInt(thresold);
 		if (ParserConstant.DAILY.equals(duration.trim())) {
-			endDate = localDateTime.plusDays(thrsld);
+			endDate = localDateTime.plusDays(1);
 		}
 		if (ParserConstant.HOURLY.equals(duration.trim())) {
-			endDate = localDateTime.plusHours(thrsld);
+			endDate = localDateTime.plusHours(1);
 
 		}
 

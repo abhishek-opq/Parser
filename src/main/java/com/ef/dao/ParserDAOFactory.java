@@ -1,4 +1,4 @@
-package com.dreamorbit.parser.dao;
+package com.ef.dao;
 
 public class ParserDAOFactory {
 	static ParserDAO parserDAO;

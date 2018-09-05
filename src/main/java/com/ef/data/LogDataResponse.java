@@ -1,4 +1,4 @@
-package com.dreamorbit.parser.data;
+package com.ef.data;
 
 import java.io.Serializable;
 
