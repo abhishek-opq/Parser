@@ -10,21 +10,16 @@ public class JDBCUtil {
 
 	static Connection connection;
 
-	/*static {
+	static {
 		try {
 			Class.forName(ParserConstant.DRIVER_CLASS);
 		} catch (ClassNotFoundException clnfe) {
 			throw new ParserException(ParserConstant.CNFE_EXCEPTION);
 		}
-	}*/
+	}
 
 	public static Connection getConnection() throws SQLException {
-		try {
-			Class.forName(ParserConstant.DRIVER_CLASS);
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 		return connection = DriverManager.getConnection(ParserConstant.URL, ParserConstant.USERNAME,
 				ParserConstant.PASSWORD);
 	}
