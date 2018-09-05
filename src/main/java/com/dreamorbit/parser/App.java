@@ -17,9 +17,9 @@ public class App {
 	private static final Log logger = LogFactory.getLog("App");
 	public static void main(String[] args) {
 
-		String[] logDataArray = { "--2018-01-01.23:00:00", "-- hourly", "--1" };
+		String[] logDataArray = { "--2017-01-01.13:00:00", "-- hourly", "--1" };
 		String message=insertLogData();
-		
+		logger.info(message);
 		LogDataRequest logDataRequest = initLogData(logDataArray);
 		String errorMessage = LogDataRequestValidator.validate(logDataRequest);
 		if (!errorMessage.isEmpty()) {
@@ -31,12 +31,18 @@ public class App {
 		
 		
 		List<String> logDataList=getLogData(logDataRequest);
+		logger.info("<==========================================LOG DATA==========================================================>");
 		if(null!=logDataList && !logDataList.isEmpty()) {
 			for(String logData:logDataList) {
 				logger.info(logData);
 			}
+		}else {
+			throw new ParserException(ParserConstant.RECORD_NOT_FOUND);
 		}
-		
+		if(null!=logDataList && !logDataList.isEmpty()) {
+		String messageStore=storeLogResult(logDataList);
+		logger.info(messageStore);
+		}
 		
 		
 
@@ -82,10 +88,10 @@ public class App {
 	
 	private static String insertLogData() {
 		List<String> logList=new LogReader().readLog();
-		ResultObject ro=parserDAO.bulkInsert(logList);
+		ResultObject ro=parserDAO.bulkInsert(logList,null);
 		String message=null;
 		if(null!=ro && ParserConstant.SUCCESS_CODE==ro.getCode()) {
-			message="";
+			message=" Log data stored ";
 		}else {
 			throw new ParserException(ro.getException().getMessage());
 		}
@@ -105,8 +111,10 @@ public class App {
 		}
 	
 	
-	
-	
+	private static String storeLogResult(List<String> logList) {
+		ResultObject ro=parserDAO.storeResults(logList);
+		return ro.getMessage();
+	}
 	
 	
 	

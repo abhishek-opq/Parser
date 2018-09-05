@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -24,17 +23,25 @@ public class ParserDAOImpl implements ParserDAO {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	@Override
-	public ResultObject bulkInsert(List<String> logList) {
+	
+	public ResultObject bulkInsert(List<String> logList,String tableName) {
 		logger.info("Going to persist logs to parser,log table ..... ");
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
 		int count = 0;
+		String insertQuery =null;
+		if(null!=logList && !logList.isEmpty()) {
+			createLogTable();
+		}
+		
 		try {
 			Connection connection=JDBCUtil.getConnection();
-			connection.setAutoCommit(true);
-
-			String compiledQuery = "insert into parser.log (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
-			PreparedStatement preparedStatement = connection.prepareStatement(compiledQuery);
+			connection.setAutoCommit(false);
+			if(null==tableName) {
+			 insertQuery = "insert into parser.log (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
+			}else {
+				insertQuery = "insert into parser."+tableName+" (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
+			}
+			PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
 			logger.info("Creating batch for bulk insert .. \n\n ");
 			for (String log : logList) {
 				count++;
@@ -52,6 +59,7 @@ public class ParserDAOImpl implements ParserDAO {
 			logger.info("Added  " + count + " logs to batch .  Persisting ....");
 			long start = System.currentTimeMillis();
 			int[] inserted = preparedStatement.executeBatch();
+			connection.commit();
 			long end = System.currentTimeMillis();
 			System.out.println(inserted);
 			System.out.println("total time taken to insert the batch = " + (end - start) + " ms");
@@ -73,7 +81,7 @@ public class ParserDAOImpl implements ParserDAO {
 	}
 
 	
-	@Override
+	
 	public ResultObject getLogData(LogDataRequest logDateRequest) {
 		String sql = " SELECT createdate,ip,request,responsecode,browser, COUNT(*) " + " FROM log where createdate >? and createdate <? " + " GROUP BY ip "
 				+ " HAVING COUNT(*) >= ? ";
@@ -86,11 +94,12 @@ public class ParserDAOImpl implements ParserDAO {
 			connection=JDBCUtil.getConnection();
 			preparedStatement=connection.prepareStatement(sql);
 			preparedStatement.setString(1, logDateRequest.getStartdate());
-			preparedStatement.setString(1, logDateRequest.getEndDate());
-			preparedStatement.setString(1, logDateRequest.getThresold());
+			preparedStatement.setString(2, logDateRequest.getEndDate());
+			preparedStatement.setString(3, logDateRequest.getThresold());
 			rs=preparedStatement.executeQuery();
+			
 			while(rs.next()) {
-				//2017-01-01 00:00:11.763|192.168.234.82|"GET / HTTP/1.1"|200|"swcd (unknown version) CFNetwork/808.2.16 Darwin/15.6.0"
+				
 				String str=new String();
 				String  date=rs.getString("createdate");
 				str=str+date+ParserConstant.PIPELINE_DELIMETER;
@@ -101,6 +110,7 @@ public class ParserDAOImpl implements ParserDAO {
 				String responsecode=rs.getString("responsecode");
 				str=str+responsecode+ParserConstant.PIPELINE_DELIMETER;
 				String browser=rs.getString("browser");
+				str=str+browser;
 				logList.add(str);
 				
 			}
@@ -116,13 +126,174 @@ public class ParserDAOImpl implements ParserDAO {
 		}catch(SQLException e) {
 			e.printStackTrace();
 			resultObject.setException(e);
+			resultObject.setMessage(e.getMessage());
 		}finally {
-			connection.close();
-			preparedStatement.close();
-			rs.close();
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				preparedStatement.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		return null;
 	}
+	
+	private void createLogTable() {
+		String dropTableSQL="DROP TABLE IF EXISTS log";
+		String createTableSQL="create table log (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300))";
+		Connection connection=null;
+		PreparedStatement ps=null;
+		try {
+			connection=JDBCUtil.getConnection();
+			connection.setAutoCommit(false);
+			ps=connection.prepareStatement(dropTableSQL);
+			logger.info("Droping log table "+dropTableSQL);
+			ps.execute();
+			ps.close();
+			ps=connection.prepareStatement(createTableSQL);
+			logger.info("Creating log table "+createTableSQL);
+			ps.execute();
+			connection.commit();
+		}catch(SQLException e) {
+			try {
+			connection.rollback();
+			}catch(SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}finally {
+			try {
+				connection.close();
+				ps.close();
+				
+			}catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+
+	private void createLogResultTable(String tableName) {
+		String dropTableSQL="DROP TABLE IF EXISTS "+tableName;
+		String createTableSQL="create table  "+tableName+"  (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300))";
+		Connection connection=null;
+		PreparedStatement ps=null;
+		try {
+			connection=JDBCUtil.getConnection();
+			connection.setAutoCommit(false);
+			ps=connection.prepareStatement(dropTableSQL);
+			logger.info("Droping log table "+dropTableSQL);
+			ps.execute();
+			ps.close();
+			ps=connection.prepareStatement(createTableSQL);
+			logger.info("Creating log table "+createTableSQL);
+			ps.execute();
+			connection.commit();
+		}catch(SQLException e) {
+			try {
+			connection.rollback();
+			}catch(SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}finally {
+			try {
+				connection.close();
+				ps.close();
+				
+			}catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	private String getUniqueTableName() {
+		String sql="select max(id) from log_table_name";
+		String sqlInsert="insert into log_table_name (tablename) values (?)";
+		Connection connection=null;
+		ResultSet rs=null;
+		String table_name=ParserConstant.TABLE_NAME;
+		PreparedStatement ps=null;
+		try {
+			connection=JDBCUtil.getConnection();
+			ps=connection.prepareStatement(sql);
+			rs=ps.executeQuery();
+			if(rs.next()) {
+				int id=rs.getInt(1)+1;
+				table_name=table_name+id;
+			}
+			ps.close();
+			ps=connection.prepareStatement(sqlInsert);
+			ps.setString(1, table_name);
+			ps.executeUpdate();
+			
+			
+			
+		}catch(SQLException e) {
+			try {
+			connection.rollback();
+			}catch(SQLException e1) {
+				e1.printStackTrace();
+			}
+			e.printStackTrace();
+		}finally {
+			try {
+				connection.close();
+				ps.close();
+				rs.close();
+				
+			}catch(SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		return table_name;
+	}
+
+	public ResultObject storeResults(List<String> logList) {
+		String tableName=getUniqueTableName();
+		createLogResultTable(tableName);
+		ResultObject resultObject=bulkInsert(logList, tableName);
+		resultObject.setMessage("Result LOGS have been stored into table "+tableName);
+		return resultObject;
+	}
+
+	
+	
+	
+	
+	
+	
 
 }

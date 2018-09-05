@@ -7,8 +7,10 @@ import com.dreamorbit.parser.util.ResultObject;
 
 public interface ParserDAO {
 	
-	public ResultObject createNewTable(String ip);
-	public ResultObject bulkInsert(List<String> logList);
+	
+	public ResultObject bulkInsert(List<String> logList,String tableName);
 	public ResultObject getLogData(LogDataRequest logDateRequest);
+	
+	public ResultObject storeResults(List<String> logList);
 
 }

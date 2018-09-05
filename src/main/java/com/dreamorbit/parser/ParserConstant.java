@@ -20,5 +20,7 @@ public interface ParserConstant {
 	String THRESOLD_NUMBER="Thresold should be a number ";
 	String THRESOLD_INVALID="Thresold can not be negative";
 	String THRESOLD_REQUIRED="Please enter thresold ";
+	String RECORD_NOT_FOUND="No Records Found ! ";
 	String PIPELINE_DELIMETER="|";
+	String TABLE_NAME="LOG_RESULT_TABLE";
 }
