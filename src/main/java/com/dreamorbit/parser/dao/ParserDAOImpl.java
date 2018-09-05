@@ -7,16 +7,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-import com.dreamorbit.parser.JDBCUtil;
-import com.dreamorbit.parser.LogDataRequest;
-import com.dreamorbit.parser.ParserConstant;
 import com.dreamorbit.parser.util.ResultObject;
+import com.ef.JDBCUtil;
+import com.ef.LogDataRequest;
+import com.ef.ParserConstant;
 
 public class ParserDAOImpl implements ParserDAO {
-	private final Log logger = LogFactory.getLog(getClass());
+	// private final Log logger = LogFactory.getLog(getClass());
 	
 
 	public ResultObject createNewTable(String ip) {
@@ -25,7 +22,8 @@ public class ParserDAOImpl implements ParserDAO {
 	}
 	
 	public ResultObject bulkInsert(List<String> logList,String tableName) {
-		logger.info("Going to persist logs to parser,log table ..... ");
+		printLog("Going to persist logs to parser,log table ..... ");
+		
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
 		int count = 0;
 		String insertQuery =null;
@@ -42,7 +40,7 @@ public class ParserDAOImpl implements ParserDAO {
 				insertQuery = "insert into parser."+tableName+" (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
 			}
 			PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
-			logger.info("Creating batch for bulk insert .. \n\n ");
+			printLog("Creating batch for bulk insert .. \n\n ");
 			for (String log : logList) {
 				count++;
 				String[] str = log.split("\\|");
@@ -53,10 +51,10 @@ public class ParserDAOImpl implements ParserDAO {
 				preparedStatement.setString(4, str[3]);
 				preparedStatement.setString(5, str[4]);
 				preparedStatement.addBatch();
-				logger.info("Adding line no " + count + " to batch");
+				
 
 			}
-			logger.info("Added  " + count + " logs to batch .  Persisting ....");
+			printLog("Added  " + count + " logs to batch .  Persisting ....");
 			long start = System.currentTimeMillis();
 			int[] inserted = preparedStatement.executeBatch();
 			connection.commit();
@@ -128,24 +126,9 @@ public class ParserDAOImpl implements ParserDAO {
 			resultObject.setException(e);
 			resultObject.setMessage(e.getMessage());
 		}finally {
-			try {
-				connection.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				preparedStatement.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				rs.close();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			JDBCUtil.closeConnection(connection);
+			JDBCUtil.closeStatement(preparedStatement);
+			JDBCUtil.closeResultSet(rs);
 		}
 		
 		return null;
@@ -160,11 +143,11 @@ public class ParserDAOImpl implements ParserDAO {
 			connection=JDBCUtil.getConnection();
 			connection.setAutoCommit(false);
 			ps=connection.prepareStatement(dropTableSQL);
-			logger.info("Droping log table "+dropTableSQL);
+			printLog("Droping log table "+dropTableSQL);
 			ps.execute();
 			ps.close();
 			ps=connection.prepareStatement(createTableSQL);
-			logger.info("Creating log table "+createTableSQL);
+			printLog("Creating log table "+createTableSQL);
 			ps.execute();
 			connection.commit();
 		}catch(SQLException e) {
@@ -175,13 +158,11 @@ public class ParserDAOImpl implements ParserDAO {
 			}
 			e.printStackTrace();
 		}finally {
-			try {
-				connection.close();
-				ps.close();
+			
+				JDBCUtil.closeConnection(connection);
+				JDBCUtil.closeStatement(ps);
 				
-			}catch(SQLException e) {
-				e.printStackTrace();
-			}
+			
 		}
 		
 	}
@@ -196,11 +177,11 @@ public class ParserDAOImpl implements ParserDAO {
 			connection=JDBCUtil.getConnection();
 			connection.setAutoCommit(false);
 			ps=connection.prepareStatement(dropTableSQL);
-			logger.info("Droping log table "+dropTableSQL);
+			printLog("Droping log table "+dropTableSQL);
 			ps.execute();
 			ps.close();
 			ps=connection.prepareStatement(createTableSQL);
-			logger.info("Creating log table "+createTableSQL);
+			printLog("Creating log table "+createTableSQL);
 			ps.execute();
 			connection.commit();
 		}catch(SQLException e) {
@@ -211,13 +192,10 @@ public class ParserDAOImpl implements ParserDAO {
 			}
 			e.printStackTrace();
 		}finally {
-			try {
-				connection.close();
-				ps.close();
-				
-			}catch(SQLException e) {
-				e.printStackTrace();
-			}
+			
+				JDBCUtil.closeConnection(connection);
+				JDBCUtil.closeStatement(ps);
+			
 		}
 		
 	}
@@ -269,14 +247,9 @@ public class ParserDAOImpl implements ParserDAO {
 			}
 			e.printStackTrace();
 		}finally {
-			try {
-				connection.close();
-				ps.close();
-				rs.close();
-				
-			}catch(SQLException e) {
-				e.printStackTrace();
-			}
+			JDBCUtil.closeConnection(connection);
+			JDBCUtil.closeStatement(ps);
+			JDBCUtil.closeResultSet(rs);
 		}
 		return table_name;
 	}
@@ -290,6 +263,10 @@ public class ParserDAOImpl implements ParserDAO {
 	}
 
 	
+	
+	public static void printLog(String str) {
+		System.out.println(str);
+	}
 	
 	
 	

@@ -1,25 +1,22 @@
-package com.dreamorbit.parser;
+package com.ef;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import com.dreamorbit.parser.dao.ParserDAO;
 import com.dreamorbit.parser.dao.ParserDAOFactory;
 import com.dreamorbit.parser.util.ResultObject;
 import com.dreamorbit.parser.validator.LogDataRequestValidator;
 
-public class App {
+public class Parser {
 	static ParserDAO parserDAO = ParserDAOFactory.getParserDAO();
-	private static final Log logger = LogFactory.getLog("App");
+	//private static final Log logger = LogFactory.getLog("App");
 	public static void main(String[] args) {
 
 		String[] logDataArray = { "--2017-01-01.13:00:00", "-- hourly", "--1" };
 		String message=insertLogData();
-		logger.info(message);
+		printLog(message);
 		LogDataRequest logDataRequest = initLogData(logDataArray);
 		String errorMessage = LogDataRequestValidator.validate(logDataRequest);
 		if (!errorMessage.isEmpty()) {
@@ -31,17 +28,17 @@ public class App {
 		
 		
 		List<String> logDataList=getLogData(logDataRequest);
-		logger.info("<==========================================LOG DATA==========================================================>");
+		printLog("<==========================================LOG DATA==========================================================>");
 		if(null!=logDataList && !logDataList.isEmpty()) {
 			for(String logData:logDataList) {
-				logger.info(logData);
+				printLog(logData);
 			}
 		}else {
 			throw new ParserException(ParserConstant.RECORD_NOT_FOUND);
 		}
 		if(null!=logDataList && !logDataList.isEmpty()) {
 		String messageStore=storeLogResult(logDataList);
-		logger.info(messageStore);
+		printLog(messageStore);
 		}
 		
 		
@@ -116,6 +113,9 @@ public class App {
 		return ro.getMessage();
 	}
 	
-	
+
+	private static void printLog(String str) {
+		System.out.println(str);
+	}
 	
 }

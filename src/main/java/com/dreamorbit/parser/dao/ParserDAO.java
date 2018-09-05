@@ -2,8 +2,8 @@ package com.dreamorbit.parser.dao;
 
 import java.util.List;
 
-import com.dreamorbit.parser.LogDataRequest;
 import com.dreamorbit.parser.util.ResultObject;
+import com.ef.LogDataRequest;
 
 public interface ParserDAO {
 	

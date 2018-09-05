@@ -1,4 +1,4 @@
-package com.dreamorbit.parser;
+package com.ef;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,14 +7,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 public class LogReader {
 	
-	private  final Log logger = LogFactory.getLog(getClass());
+	//private  final Log logger = LogFactory.getLog(getClass());
 	public  List<String> readLog() {
-		logger.info("Going to Read access.log ....");
+		printLog("Going to Read access.log ....");
 		String encoding = "UTF-8";
 		
 		BufferedReader reader = null;
@@ -29,9 +26,9 @@ public class LogReader {
 			for (String line; (line = reader.readLine()) != null;) {
 				count++;
 					logDataList.add(line);
-					logger.info("Read line number :  "+count);
+					
 			}
-			logger.info("Total lines read : "+count);
+			printLog("Total lines read : "+count);
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -67,5 +64,9 @@ public class LogReader {
 		ParserDAO parserDAO=new ParserDAOImpl();
 		parserDAO.bultInsert(logDataList);
 	}*/
+	
+	private static void printLog(String str) {
+		System.out.println(str);
+	}
 
 }

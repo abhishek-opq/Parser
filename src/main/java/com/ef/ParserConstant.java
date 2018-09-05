@@ -1,4 +1,4 @@
-package com.dreamorbit.parser;
+package com.ef;
 
 public interface ParserConstant {
 	String URL="jdbc:mysql://127.0.0.1:3306/parser";
