@@ -7,6 +7,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Repository;
+
 import com.ef.data.LogDataRequest;
 import com.ef.util.JDBCUtil;
 import com.ef.util.ParserConstant;
@@ -17,8 +20,9 @@ import com.ef.util.ResultObject;
  * @author abhishek.kumar
  *
  */
+@Repository
 public class ParserDAOImpl implements ParserDAO {
-
+	
 	public ResultObject bulkInsert(List<String> logList) {
 		printLog("Going to persist logs to parser.log table ..... ");
 
@@ -68,7 +72,7 @@ public class ParserDAOImpl implements ParserDAO {
 		}
 		return ro;
 	}
-
+	
 	public ResultObject getLogData(LogDataRequest logDateRequest) {
 
 		String sql = " SELECT createdate,ip,request,responsecode,browser, COUNT(*) as cnt "
@@ -224,7 +228,7 @@ public class ParserDAOImpl implements ParserDAO {
 		}
 		return table_name;
 	}
-
+	
 	public ResultObject storeResults(List<String> logList, String duration) {
 		String tableName = getUniqueTableName();
 		createLogResultTable(tableName);
@@ -236,7 +240,7 @@ public class ParserDAOImpl implements ParserDAO {
 	public static void printLog(String str) {
 		System.out.println(str);
 	}
-
+	
 	public ResultObject bulkInsertLogResult(List<String> logList, String tableName, String duration) {
 		printLog("Going to persist logs to parser."+tableName+"  table ..... ");
 

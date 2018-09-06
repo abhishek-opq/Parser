@@ -1,5 +1,9 @@
 package com.ef.validator;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.MessageSource;
+import org.springframework.stereotype.Component;
+
 import com.ef.data.LogDataRequest;
 import com.ef.util.ParserConstant;
 /**
@@ -7,44 +11,53 @@ import com.ef.util.ParserConstant;
  * @author abhishek.kumar
  *
  */
+@Component
 public class LogDataRequestValidator {
-
-	public static String validate(LogDataRequest request) {
+@Autowired
+	MessageSource messageSOurce;
+	public  String validate(LogDataRequest request) {
 		String startDate = request.getStartdate();
 		String duration = request.getDuration();
 		String thresold = request.getThresold();
 		String filePath=request.getFilePath();
 		if(null==filePath) {
-			return ParserConstant.FILE_PATH_REQUIRED;
+			return messageSOurce.getMessage("FILE.PATH.REQUIRED", null,null);
 		}
 		
 		
 		if (null != startDate
 				&& !startDate.trim().matches("([0-9]{4})-([0-9]{2})-([0-9]{2}).([0-9]{2}):([0-9]{2}):([0-9]{2})")) {
-			return ParserConstant.INVALID_DATE_FORMAT;
+			
+			return messageSOurce.getMessage("INVALID.DATE.FORMAT", null,null);
 		} else if (null == startDate) {
-			return ParserConstant.START_DATE_REQUIRED;
+			
+			return messageSOurce.getMessage("START.DATE.REQUIRED", null,null);
 		}
 		if (null != duration) {
 			if (ParserConstant.DAILY.equals(duration.trim()) || ParserConstant.HOURLY.equals(duration.trim())) {
 
 			} else {
-				return ParserConstant.INVALID_DURATION;
+				
+				return messageSOurce.getMessage("INVALID.DURATION", null,null);
 			}
 		} else {
-			return ParserConstant.DURATION_REQUIRED;
+			
+			return messageSOurce.getMessage("DURATION.REQUIRED", null,null);
 		}
 		if (null != thresold) {
 			try {
 				int thrsld = Integer.parseInt(thresold);
 				if (0 > thrsld) {
-					return ParserConstant.THRESOLD_INVALID;
+					
+					return messageSOurce.getMessage("THRESOLD.INVALID", null,null);
 				}
 			} catch (NumberFormatException nfe) {
-				return ParserConstant.THRESOLD_NUMBER;
+				
+				return messageSOurce.getMessage("THRESOLD.NUMBER", null,null);
 			}
 		} else {
-			return ParserConstant.THRESOLD_REQUIRED;
+			
+			return messageSOurce.getMessage("THRESOLD.REQUIRED", null,null);
 		}
 		return "";
 	}
