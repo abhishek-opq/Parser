@@ -1,6 +1,16 @@
 package com.ef.util;
 
-public class ResultObject {
+import java.io.Serializable;
+/**
+ * 
+ * @author abhishek.kumar
+ *
+ */
+public class ResultObject implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Object object;
 	private long code;
 	private String message;

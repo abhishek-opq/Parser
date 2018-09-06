@@ -1,7 +1,11 @@
 package com.ef.data;
 
 import java.io.Serializable;
-
+/**
+ * 
+ * @author abhishek.kumar
+ *
+ */
 public class LogDataRequest implements Serializable {
 	
 	/**
@@ -12,6 +16,7 @@ public class LogDataRequest implements Serializable {
 	private String endDate;
 	private String duration;
 	private String thresold;
+	private String filePath;
 	
 	
 	public LogDataRequest() {
@@ -56,6 +61,16 @@ public class LogDataRequest implements Serializable {
 
 	public void setEndDate(String endDate) {
 		this.endDate = endDate;
+	}
+
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
 	}
 
 

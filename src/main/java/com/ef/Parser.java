@@ -11,48 +11,56 @@ import com.ef.util.ParserConstant;
 import com.ef.util.ParserException;
 import com.ef.util.ResultObject;
 import com.ef.validator.LogDataRequestValidator;
-
+/**
+ * 
+ * @author abhishek.kumar
+ *
+ */
 public class Parser {
 	static ParserDAO parserDAO = ParserDAOFactory.getParserDAO();
-	//private static final Log logger = LogFactory.getLog("App");
+
+
 	public static void main(String[] args) {
 
-		String[] logDataArray = { "--2017-01-01.13:00:00", "-- hourly", "--200" };
-		String message=insertLogData();
-		printLog(message);
-		LogDataRequest logDataRequest = initLogData(logDataArray);
+		
+		
+		LogDataRequest logDataRequest = initLogData(args);
 		String errorMessage = LogDataRequestValidator.validate(logDataRequest);
 		if (!errorMessage.isEmpty()) {
 			throw new ParserException(errorMessage);
 		}
-
-		String endDate=getEndDate(logDataRequest.getStartdate(), logDataRequest.getDuration(), logDataRequest.getThresold());
+		String message = insertLogData(logDataRequest.getFilePath());
+		printLog(message);
+		String endDate = getEndDate(logDataRequest.getStartdate(), logDataRequest.getDuration(),
+				logDataRequest.getThresold());
 		logDataRequest.setEndDate(endDate);
-		
-		
-		List<String> logDataList=getLogData(logDataRequest);
-		printLog("<==========================================LOG DATA==========================================================>\n\n");
-		if(null!=logDataList && !logDataList.isEmpty()) {
-			for(String logData:logDataList) {
+
+		List<String> logDataList = getLogData(logDataRequest);
+		printLog(
+				"<==========================================LOG DATA BEGINS==========================================================>\n\n");
+		if (null != logDataList && !logDataList.isEmpty()) {
+			for (String logData : logDataList) {
 				printLog(logData);
 			}
-		}else {
+		} else {
 			throw new ParserException(ParserConstant.RECORD_NOT_FOUND);
 		}
 		printLog("\n\n");
-		printLog("<==========================================LOG DATA ENDS==========================================================> \n\n");
-		if(null!=logDataList && !logDataList.isEmpty()) {
-		String messageStore=storeLogResult(logDataList);
-		printLog(messageStore);
+		printLog(
+				"<==========================================LOG DATA ENDS============================================================> \n\n");
+		if (null != logDataList && !logDataList.isEmpty()) {
+			String messageStore = storeLogResult(logDataList, logDataRequest.getDuration());
+			printLog(messageStore);
 		}
-		
-		
 
 	}
 
 	private static LogDataRequest initLogData(String[] arg) {
-		if (3 != arg.length) {
-			throw new ParserException("Invalid input");
+		if(arg.length<4) {
+			throw new ParserException(ParserConstant.VALID_COMMAND);
+		}
+		if (4 != arg.length && !arg[0].contains("=") && !arg[1].contains("=") && !arg[2].contains("=") && !arg[3].contains("=")) {
+			throw new ParserException(ParserConstant.VALID_COMMAND);
 		}
 		String inputString = "";
 		for (String input : arg) {
@@ -63,9 +71,10 @@ public class Parser {
 		String[] inputArray = inputString.split("--");
 
 		LogDataRequest logDataRequest = new LogDataRequest();
-		logDataRequest.setStartdate(inputArray[1]);
-		logDataRequest.setDuration(inputArray[2]);
-		logDataRequest.setThresold(inputArray[3]);
+		logDataRequest.setFilePath(inputArray[1].split("=")[1]);
+		logDataRequest.setStartdate(inputArray[2].split("=")[1]);
+		logDataRequest.setDuration(inputArray[3].split("=")[1]);
+		logDataRequest.setThresold(inputArray[4].split("=")[1]);
 
 		return logDataRequest;
 	}
@@ -74,7 +83,7 @@ public class Parser {
 
 		LocalDateTime endDate = null;
 		LocalDateTime localDateTime = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd.HH:mm:ss"));
-		
+
 		int thrsld = Integer.parseInt(thresold);
 		if (ParserConstant.DAILY.equals(duration.trim())) {
 			endDate = localDateTime.plusDays(1);
@@ -87,40 +96,37 @@ public class Parser {
 		return String.valueOf(endDate);
 
 	}
-	
-	private static String insertLogData() {
-		List<String> logList=new LogReader().readLog();
-		ResultObject ro=parserDAO.bulkInsert(logList,null);
-		String message=null;
-		if(null!=ro && ParserConstant.SUCCESS_CODE==ro.getCode()) {
-			message=" Log data stored ";
-		}else {
+
+	private static String insertLogData(String filePath) {
+		List<String> logList = new LogReader().readLog(filePath);
+		ResultObject ro = parserDAO.bulkInsert(logList);
+		String message = null;
+		if (null != ro && ParserConstant.SUCCESS_CODE == ro.getCode()) {
+			message = " Log data stored ";
+		} else {
 			throw new ParserException(ro.getException().getMessage());
 		}
 		return message;
 	}
 
-	private static  List<String> getLogData(LogDataRequest logDataRequest){
-		ResultObject ro=parserDAO.getLogData(logDataRequest);
-		List<String> logList=null;
-		if(null!=ro && ParserConstant.SUCCESS_CODE==ro.getCode()) {
-			logList= (List<String>)ro.getObject();
-			}
-		else {
+	private static List<String> getLogData(LogDataRequest logDataRequest) {
+		ResultObject ro = parserDAO.getLogData(logDataRequest);
+		List<String> logList = null;
+		if (null != ro && ParserConstant.SUCCESS_CODE == ro.getCode()) {
+			logList = (List<String>) ro.getObject();
+		} else {
 			throw new ParserException(ro.getException().getMessage());
 		}
 		return logList;
-		}
-	
-	
-	private static String storeLogResult(List<String> logList) {
-		ResultObject ro=parserDAO.storeResults(logList);
+	}
+
+	private static String storeLogResult(List<String> logList, String duration) {
+		ResultObject ro = parserDAO.storeResults(logList, duration);
 		return ro.getMessage();
 	}
-	
 
 	private static void printLog(String str) {
 		System.out.println(str);
 	}
-	
+
 }

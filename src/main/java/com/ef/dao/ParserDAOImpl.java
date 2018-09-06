@@ -10,18 +10,17 @@ import java.util.List;
 import com.ef.data.LogDataRequest;
 import com.ef.util.JDBCUtil;
 import com.ef.util.ParserConstant;
+import com.ef.util.ParserException;
 import com.ef.util.ResultObject;
-
+/**
+ * 
+ * @author abhishek.kumar
+ *
+ */
 public class ParserDAOImpl implements ParserDAO {
-	// private final Log logger = LogFactory.getLog(getClass());
 
-	public ResultObject createNewTable(String ip) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public ResultObject bulkInsert(List<String> logList, String tableName) {
-		printLog("Going to persist logs to parser,log table ..... ");
+	public ResultObject bulkInsert(List<String> logList) {
+		printLog("Going to persist logs to parser.log table ..... ");
 
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
 		int count = 0;
@@ -29,17 +28,15 @@ public class ParserDAOImpl implements ParserDAO {
 		if (null != logList && !logList.isEmpty()) {
 			createLogTable();
 		}
-
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
 		try {
-			Connection connection = JDBCUtil.getConnection();
+			connection = JDBCUtil.getConnection();
 			connection.setAutoCommit(false);
-			if (null == tableName) {
-				insertQuery = "insert into parser.log (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
-			} else {
-				insertQuery = "insert into parser." + tableName
-						+ " (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
-			}
-			PreparedStatement preparedStatement = connection.prepareStatement(insertQuery);
+
+			insertQuery = "insert into parser.log (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
+
+			preparedStatement = connection.prepareStatement(insertQuery);
 			printLog("Creating batch for bulk insert .. \n\n ");
 			for (String log : logList) {
 				count++;
@@ -55,31 +52,27 @@ public class ParserDAOImpl implements ParserDAO {
 			}
 			printLog("Added  " + count + " logs to batch .  Persisting ....");
 			long start = System.currentTimeMillis();
-			int[] inserted = preparedStatement.executeBatch();
+			preparedStatement.executeBatch();
 			connection.commit();
 			long end = System.currentTimeMillis();
-			System.out.println(inserted);
-			System.out.println("total time taken to insert the batch = " + (end - start) + " ms");
 
-			preparedStatement.close();
-			connection.close();
+			printLog("total time taken to insert the batch = " + (end - start) + " ms");
+
 			ro.setCode(ParserConstant.SUCCESS_CODE);
 
 		} catch (SQLException ex) {
-			ex.printStackTrace();
-			System.err.println("SQLException information");
-			while (ex != null) {
-				System.err.println("Error msg: " + ex.getMessage());
-				ex = ex.getNextException();
-			}
-			throw new RuntimeException("Error");
+			throw new ParserException(ex.getMessage());
+		} finally {
+			JDBCUtil.closeConnection(connection);
+			JDBCUtil.closeStatement(preparedStatement);
 		}
 		return ro;
 	}
 
 	public ResultObject getLogData(LogDataRequest logDateRequest) {
-		String sql = " SELECT createdate,ip,request,responsecode,browser, COUNT(*) "
-				+ " FROM log where createdate >? and createdate <? " + " GROUP BY ip " + " HAVING COUNT(*) >= ? ";
+
+		String sql = " SELECT createdate,ip,request,responsecode,browser, COUNT(*) as cnt "
+				+ " FROM log where createdate >? and createdate <? " + " GROUP BY ip " + " HAVING cnt >= ? ";
 		List<String> logList = new ArrayList<String>();
 		ResultObject resultObject = new ResultObject(ParserConstant.ERROR_CODE);
 		Connection connection = null;
@@ -106,6 +99,10 @@ public class ParserDAOImpl implements ParserDAO {
 				str = str + responsecode + ParserConstant.PIPELINE_DELIMETER;
 				String browser = rs.getString("browser");
 				str = str + browser;
+				str = str + responsecode + ParserConstant.PIPELINE_DELIMETER;
+				int count = rs.getInt("cnt");
+
+				str = str + count;
 				logList.add(str);
 
 			}
@@ -137,11 +134,11 @@ public class ParserDAOImpl implements ParserDAO {
 			connection = JDBCUtil.getConnection();
 			connection.setAutoCommit(false);
 			ps = connection.prepareStatement(dropTableSQL);
-			printLog("Droping log table " + dropTableSQL);
+			
 			ps.execute();
 			ps.close();
 			ps = connection.prepareStatement(createTableSQL);
-			printLog("Creating log table " + createTableSQL);
+			
 			ps.execute();
 			connection.commit();
 		} catch (SQLException e) {
@@ -163,18 +160,18 @@ public class ParserDAOImpl implements ParserDAO {
 	private void createLogResultTable(String tableName) {
 		String dropTableSQL = "DROP TABLE IF EXISTS " + tableName;
 		String createTableSQL = "create table  " + tableName
-				+ "  (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300))";
+				+ "  (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300),reasonforblock varchar(200))";
 		Connection connection = null;
 		PreparedStatement ps = null;
 		try {
 			connection = JDBCUtil.getConnection();
 			connection.setAutoCommit(false);
 			ps = connection.prepareStatement(dropTableSQL);
-			printLog("Droping log table " + dropTableSQL);
+			
 			ps.execute();
 			ps.close();
 			ps = connection.prepareStatement(createTableSQL);
-			printLog("Creating log table " + createTableSQL);
+			
 			ps.execute();
 			connection.commit();
 		} catch (SQLException e) {
@@ -228,16 +225,75 @@ public class ParserDAOImpl implements ParserDAO {
 		return table_name;
 	}
 
-	public ResultObject storeResults(List<String> logList) {
+	public ResultObject storeResults(List<String> logList, String duration) {
 		String tableName = getUniqueTableName();
 		createLogResultTable(tableName);
-		ResultObject resultObject = bulkInsert(logList, tableName);
+		ResultObject resultObject = bulkInsertLogResult(logList, tableName, duration);
 		resultObject.setMessage("Result LOGS have been stored into table " + tableName);
 		return resultObject;
 	}
 
 	public static void printLog(String str) {
 		System.out.println(str);
+	}
+
+	public ResultObject bulkInsertLogResult(List<String> logList, String tableName, String duration) {
+		printLog("Going to persist logs to parser,log table ..... ");
+
+		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
+
+		String insertQuery = null;
+		String reasonForblock = "";
+		if (null != logList && !logList.isEmpty()) {
+			createLogTable();
+		}
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		try {
+			connection = JDBCUtil.getConnection();
+			connection.setAutoCommit(false);
+
+			insertQuery = "insert into parser." + tableName
+					+ " (createdate,ip,request,responsecode,browser,reasonforblock) values (?,?,?,?,?,?)";
+
+			preparedStatement = connection.prepareStatement(insertQuery);
+			printLog("Creating batch for bulk insert .. \n\n ");
+			for (String log : logList) {
+
+				String[] str = log.split("\\|");
+
+				preparedStatement.setString(1, str[0]);
+				preparedStatement.setString(2, str[1]);
+				preparedStatement.setString(3, str[2]);
+				preparedStatement.setString(4, str[3]);
+				preparedStatement.setString(5, str[4]);
+
+				int hit = Integer.parseInt(str[5]);
+				if (duration.trim().equals(ParserConstant.HOURLY) && hit >= ParserConstant.HOURLY_HIT) {
+					reasonForblock = "Blocked because of " + hit + " hit in an hour";
+
+				}
+				if (duration.trim().equals(ParserConstant.DAILY) && hit >= ParserConstant.DAILY_HIT) {
+					reasonForblock = "Blocked because of " + hit + " hit in a day";
+
+				}
+				preparedStatement.setString(6, reasonForblock);
+
+				preparedStatement.addBatch();
+
+			}
+			preparedStatement.executeBatch();
+			connection.commit();
+
+			ro.setCode(ParserConstant.SUCCESS_CODE);
+
+		} catch (SQLException ex) {
+			throw new ParserException(ex.getMessage());
+		} finally {
+			JDBCUtil.closeConnection(connection);
+			JDBCUtil.closeStatement(preparedStatement);
+		}
+		return ro;
 	}
 
 }

@@ -5,7 +5,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
+/**
+ * 
+ * @author abhishek.kumar
+ *
+ */
 public class JDBCUtil {
 
 	static Connection connection;
@@ -19,7 +23,7 @@ public class JDBCUtil {
 	}
 
 	public static Connection getConnection() throws SQLException {
-		
+
 		return connection = DriverManager.getConnection(ParserConstant.URL, ParserConstant.USERNAME,
 				ParserConstant.PASSWORD);
 	}
@@ -45,7 +49,6 @@ public class JDBCUtil {
 		}
 	}
 
-
 	public static void closeResultSet(ResultSet rs) {
 		try {
 			if (null != rs) {
@@ -55,6 +58,5 @@ public class JDBCUtil {
 			throw new ParserException(ParserConstant.SQL_EXCEPTION);
 		}
 	}
-	
-	
+
 }
