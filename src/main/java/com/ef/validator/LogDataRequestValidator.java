@@ -15,6 +15,14 @@ import com.ef.util.ParserConstant;
 public class LogDataRequestValidator {
 @Autowired
 	MessageSource messageSOurce;
+
+
+
+/**
+ * 
+ * @param LogDataRequestst
+ * @return error message if exist
+ */
 	public  String validate(LogDataRequest request) {
 		String startDate = request.getStartdate();
 		String duration = request.getDuration();

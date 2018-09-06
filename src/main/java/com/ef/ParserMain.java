@@ -17,7 +17,10 @@ import com.ef.util.ParserException;
 import com.ef.validator.LogDataRequestValidator;
 
 public class ParserMain {
-	
+	/**
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		
 		
@@ -86,6 +89,15 @@ public class ParserMain {
 		System.out.println(str);
 	}
 	
+	
+	/**
+	 * 
+	 * @param date
+	 * @param duration
+	 * @param thresold
+	 * @return String
+	 * Calculating end date based on start date entered and duration
+	 */
 	private static String getEndDate(String date, String duration, String thresold) {
 
 		LocalDateTime endDate = null;
