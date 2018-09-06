@@ -238,7 +238,7 @@ public class ParserDAOImpl implements ParserDAO {
 	}
 
 	public ResultObject bulkInsertLogResult(List<String> logList, String tableName, String duration) {
-		printLog("Going to persist logs to parser,log table ..... ");
+		printLog("Going to persist logs to parser."+tableName+"  table ..... ");
 
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
 
