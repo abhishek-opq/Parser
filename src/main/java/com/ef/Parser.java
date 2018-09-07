@@ -18,7 +18,7 @@ import com.ef.util.ParserConstant;
 import com.ef.util.ParserException;
 import com.ef.validator.LogDataRequestValidator;
 
-public class ParserMain {
+public class Parser {
 	/**
 	 * 
 	 * @param args
