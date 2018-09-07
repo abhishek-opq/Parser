@@ -19,8 +19,7 @@ import com.ef.util.ResultObject;
 
 /**
  * 
- * @author abhishek.kumar 
- * This is a DAO implementation class which is
+ * @author abhishek.kumar This is a DAO implementation class which is
  *         responsible for all database operations
  */
 @Repository
@@ -120,22 +119,26 @@ public class ParserDAOImpl implements ParserDAO {
 
 			while (rs.next()) {
 
-				String str = new String();
+				StringBuffer sb = new StringBuffer();
 				String date = rs.getString("createdate");
-				str = str + date + ParserConstant.PIPELINE_DELIMETER;
-				String ip = rs.getString("ip");
-				str = str + ip + ParserConstant.PIPELINE_DELIMETER;
-				String request = rs.getString("request");
-				str = str + request + ParserConstant.PIPELINE_DELIMETER;
-				String responsecode = rs.getString("responsecode");
-				str = str + responsecode + ParserConstant.PIPELINE_DELIMETER;
-				String browser = rs.getString("browser");
-				str = str + browser;
-				str = str + responsecode + ParserConstant.PIPELINE_DELIMETER;
-				int count = rs.getInt("cnt");
+				sb.append(date).append(ParserConstant.PIPELINE_DELIMETER);
 
-				str = str + count;
-				logList.add(str);
+				String ip = rs.getString("ip");
+				sb.append(ip).append(ParserConstant.PIPELINE_DELIMETER);
+
+				String request = rs.getString("request");
+				sb.append(request).append(ParserConstant.PIPELINE_DELIMETER);
+
+				String responsecode = rs.getString("responsecode");
+				sb.append(responsecode).append(ParserConstant.PIPELINE_DELIMETER);
+
+				String browser = rs.getString("browser");
+				sb.append(browser).append(ParserConstant.PIPELINE_DELIMETER);
+
+				int count = rs.getInt("cnt");
+				sb.append(count).append(ParserConstant.PIPELINE_DELIMETER);
+
+				logList.add(sb.toString());
 
 			}
 
