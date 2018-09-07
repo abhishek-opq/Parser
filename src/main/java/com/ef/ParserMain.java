@@ -23,7 +23,7 @@ public class ParserMain {
 	 */
 	public static void main(String[] args) {
 		
-		
+		args=new String[] {"--accesslog=D:\\Parser\\ex/access.log" ,"--startDate=2017-01-01.13:00:00", "--duration=hourly", "--threshold=100"};
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ParserConfig.class);
 		ParserService parserService=ctx.getBean(ParserService.class);
 		LogReaderService logReaderService=ctx.getBean(LogReaderService.class);

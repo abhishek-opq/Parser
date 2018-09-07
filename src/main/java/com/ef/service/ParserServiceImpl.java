@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import com.ef.dao.ParserDAO;
@@ -14,11 +16,12 @@ import com.ef.util.ResultObject;
 
 
 @Service
+@PropertySource("message.properties")
 public class ParserServiceImpl implements ParserService{
 	@Autowired
 	ParserDAO parserDAO;
 	@Autowired
-	MessageSource messageSOurce;
+	private Environment env;
 	public  String insertLogData(List<String> logList) {
 		
 		ResultObject ro = parserDAO.bulkInsert(logList);
@@ -52,10 +55,10 @@ public class ParserServiceImpl implements ParserService{
 	
 	public LogDataRequest initLogData(String[] arg) {
 		if(arg.length<4) {
-			throw new ParserException(messageSOurce.getMessage("VALID.COMMAND", null,null));
+			throw new ParserException(env.getProperty("VALID.COMMAND"));
 		}
 		if (4 != arg.length && !arg[0].contains("=") && !arg[1].contains("=") && !arg[2].contains("=") && !arg[3].contains("=")) {
-			throw new ParserException(messageSOurce.getMessage("VALID.COMMAND", null,null));
+			throw new ParserException(env.getProperty("VALID.COMMAND"));
 		}
 		String inputString = "";
 		for (String input : arg) {

@@ -7,11 +7,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.context.annotation.Bean;
+import javax.sql.DataSource;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import com.ef.data.LogDataRequest;
-import com.ef.util.JDBCUtil;
 import com.ef.util.ParserConstant;
 import com.ef.util.ParserException;
 import com.ef.util.ResultObject;
@@ -22,7 +23,8 @@ import com.ef.util.ResultObject;
  */
 @Repository
 public class ParserDAOImpl implements ParserDAO {
-	
+	@Autowired
+	private DataSource dataSource;
 	public ResultObject bulkInsert(List<String> logList) {
 		printLog("Going to persist logs to parser.log table ..... ");
 
@@ -35,7 +37,7 @@ public class ParserDAOImpl implements ParserDAO {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			connection.setAutoCommit(false);
 
 			insertQuery = "insert into parser.log (createdate,ip,request,responsecode,browser) values (?,?,?,?,?)";
@@ -66,10 +68,7 @@ public class ParserDAOImpl implements ParserDAO {
 
 		} catch (SQLException ex) {
 			throw new ParserException(ex.getMessage());
-		} finally {
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(preparedStatement);
-		}
+		} 
 		return ro;
 	}
 	
@@ -83,7 +82,7 @@ public class ParserDAOImpl implements ParserDAO {
 		PreparedStatement preparedStatement = null;
 		ResultSet rs = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setString(1, logDateRequest.getStartdate());
 			preparedStatement.setString(2, logDateRequest.getEndDate());
@@ -120,11 +119,7 @@ public class ParserDAOImpl implements ParserDAO {
 			e.printStackTrace();
 			resultObject.setException(e);
 			resultObject.setMessage(e.getMessage());
-		} finally {
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(preparedStatement);
-			JDBCUtil.closeResultSet(rs);
-		}
+		} 
 
 		return null;
 	}
@@ -135,7 +130,7 @@ public class ParserDAOImpl implements ParserDAO {
 		Connection connection = null;
 		PreparedStatement ps = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			connection.setAutoCommit(false);
 			ps = connection.prepareStatement(dropTableSQL);
 			
@@ -152,12 +147,7 @@ public class ParserDAOImpl implements ParserDAO {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-		} finally {
-
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(ps);
-
-		}
+		} 
 
 	}
 
@@ -168,7 +158,7 @@ public class ParserDAOImpl implements ParserDAO {
 		Connection connection = null;
 		PreparedStatement ps = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			connection.setAutoCommit(false);
 			ps = connection.prepareStatement(dropTableSQL);
 			
@@ -185,13 +175,7 @@ public class ParserDAOImpl implements ParserDAO {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-		} finally {
-
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(ps);
-
-		}
-
+		} 
 	}
 
 	private String getUniqueTableName() {
@@ -202,7 +186,7 @@ public class ParserDAOImpl implements ParserDAO {
 		String table_name = ParserConstant.TABLE_NAME;
 		PreparedStatement ps = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			ps = connection.prepareStatement(sql);
 			rs = ps.executeQuery();
 			if (rs.next()) {
@@ -218,14 +202,10 @@ public class ParserDAOImpl implements ParserDAO {
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+			
 			}
-			e.printStackTrace();
-		} finally {
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(ps);
-			JDBCUtil.closeResultSet(rs);
-		}
+			
+		} 
 		return table_name;
 	}
 	
@@ -254,7 +234,7 @@ public class ParserDAOImpl implements ParserDAO {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 		try {
-			connection = JDBCUtil.getConnection();
+			connection = dataSource.getConnection();
 			connection.setAutoCommit(false);
 
 			insertQuery = "insert into parser." + tableName
@@ -293,10 +273,7 @@ public class ParserDAOImpl implements ParserDAO {
 
 		} catch (SQLException ex) {
 			throw new ParserException(ex.getMessage());
-		} finally {
-			JDBCUtil.closeConnection(connection);
-			JDBCUtil.closeStatement(preparedStatement);
-		}
+		} 
 		return ro;
 	}
 
