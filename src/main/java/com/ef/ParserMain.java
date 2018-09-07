@@ -2,6 +2,7 @@ package com.ef;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.context.ApplicationContext;
@@ -24,13 +25,13 @@ public class ParserMain {
 	 */
 	public static void main(String[] args) {
 		
-		args=new String[] {"--accesslog=E:\\Rater_ALL\\TEST_0t_SEP\\workspace\\test_files/access.log" ,"--startDate=2017-01-01.13:00:00", "--duration=hourly", "--threshold=100"};
+	
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ParserConfig.class);
 		ParserService parserService=ctx.getBean(ParserService.class);
 		LogReaderService logReaderService=ctx.getBean(LogReaderService.class);
 		MessageSource messageSource=ctx.getBean(MessageSource.class);
 		LogDataRequestValidator validator=ctx.getBean(LogDataRequestValidator.class);
-		
+		List<String> logFileList = new ArrayList<String>();
 		/**
 		 * Creating request object from parameters entered in command prompt
 		 */
@@ -55,8 +56,13 @@ public class ParserMain {
 		String endDate = getEndDate(logDataRequest.getStartdate(), logDataRequest.getDuration(),
 				logDataRequest.getThresold());
 		logDataRequest.setEndDate(endDate);
-		 List<String> logFileList = logReaderService.readLog(logDataRequest.getFilePath());
-		
+		try {
+		 logFileList = logReaderService.readLog(logDataRequest.getFilePath());
+		}catch(ParserException pe) {
+			throw new ParserException(pe.getMessage());
+		}catch(Exception e) {
+			throw new ParserException(e.getMessage());
+		}
 		/**
 		 * Inserting log data list into log table
 		 */

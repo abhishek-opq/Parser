@@ -12,36 +12,41 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.ef.util.ParserException;
+
 /**
  * 
- * @author abhishek.kumar
- *
+ * @author abhishek.kumar 
+ * This class is responsible to read all the lines from
+ *         log file
  */
 @Service
 public class LogReaderServiceImpl implements LogReaderService {
 	private static final String encoding = "UTF-8";
-	
+
+	/**
+	 * Reading log file
+	 * 
+	 * @param filePath
+	 * @return
+	 */
 	public List<String> readLog(String filePath) {
-		
-		
 
 		BufferedReader reader = null;
-		int count = 0;
+		
 
 		List<String> logDataList = new ArrayList<String>();
 		try {
 
-			reader = new BufferedReader(
-					new InputStreamReader(new FileInputStream(new File(filePath)), encoding));
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), encoding));
 
 			for (String line; (line = reader.readLine()) != null;) {
-				count++;
+				
 				logDataList.add(line);
 
 			}
-			
+
 		} catch (FileNotFoundException fnfe) {
-			throw new ParserException(fnfe.getMessage() );
+			throw new ParserException(fnfe.getMessage());
 
 		} catch (Exception e) {
 			throw new ParserException(e.getMessage());
@@ -51,13 +56,11 @@ public class LogReaderServiceImpl implements LogReaderService {
 					reader.close();
 				} catch (IOException e) {
 
-					e.printStackTrace();
+					throw new ParserException(e.getMessage());
 				}
 		}
 		return logDataList;
 
 	}
 
-	
-	
 }
