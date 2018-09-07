@@ -25,11 +25,12 @@ import com.ef.util.ResultObject;
 public class ParserDAOImpl implements ParserDAO {
 	@Autowired
 	private DataSource dataSource;
-	public ResultObject bulkInsert(List<String> logList) {
+	public ResultObject bulkInsert(List<String> logList) throws ParserException{
 		printLog("Going to persist logs to parser.log table ..... ");
 
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
 		int count = 0;
+		int badLogCount=0;
 		String insertQuery = null;
 		if (null != logList && !logList.isEmpty()) {
 			createLogTable();
@@ -47,16 +48,20 @@ public class ParserDAOImpl implements ParserDAO {
 			for (String log : logList) {
 				count++;
 				String[] str = log.split("\\|");
-
+				if(5==str.length) {
 				preparedStatement.setString(1, str[0]);
 				preparedStatement.setString(2, str[1]);
 				preparedStatement.setString(3, str[2]);
 				preparedStatement.setString(4, str[3]);
 				preparedStatement.setString(5, str[4]);
 				preparedStatement.addBatch();
+				}else {
+					badLogCount++;
+				}
 
 			}
 			printLog("Added  " + count + " logs to batch .  Persisting ....");
+			printLog("Found  " + badLogCount + " logs which could not be persistd");
 			long start = System.currentTimeMillis();
 			preparedStatement.executeBatch();
 			connection.commit();
@@ -68,11 +73,18 @@ public class ParserDAOImpl implements ParserDAO {
 
 		} catch (SQLException ex) {
 			throw new ParserException(ex.getMessage());
-		} 
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
+		}
 		return ro;
 	}
 	
-	public ResultObject getLogData(LogDataRequest logDateRequest) {
+	public ResultObject getLogData(LogDataRequest logDateRequest) throws ParserException {
 
 		String sql = " SELECT createdate,ip,request,responsecode,browser, COUNT(*) as cnt "
 				+ " FROM log where createdate >? and createdate <? " + " GROUP BY ip " + " HAVING cnt >= ? ";
@@ -116,15 +128,22 @@ public class ParserDAOImpl implements ParserDAO {
 			return resultObject;
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			
 			resultObject.setException(e);
 			resultObject.setMessage(e.getMessage());
-		} 
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
+		}
 
 		return null;
 	}
 
-	private void createLogTable() {
+	private void createLogTable() throws ParserException {
 		String dropTableSQL = "DROP TABLE IF EXISTS log";
 		String createTableSQL = "create table log (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300))";
 		Connection connection = null;
@@ -142,16 +161,24 @@ public class ParserDAOImpl implements ParserDAO {
 			connection.commit();
 		} catch (SQLException e) {
 			try {
+				if(null!=connection)
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				throw new ParserException(e1.getMessage());
 			}
-			e.printStackTrace();
-		} 
+			throw new ParserException(e.getMessage());
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
+		}
 
 	}
 
-	private void createLogResultTable(String tableName) {
+	private void createLogResultTable(String tableName) throws ParserException {
 		String dropTableSQL = "DROP TABLE IF EXISTS " + tableName;
 		String createTableSQL = "create table  " + tableName
 				+ "  (createdate Timestamp,ip varchar(50),request varchar(50),responsecode varchar(10),browser varchar(300),reasonforblock varchar(200))";
@@ -170,15 +197,23 @@ public class ParserDAOImpl implements ParserDAO {
 			connection.commit();
 		} catch (SQLException e) {
 			try {
+				if(null!=connection)
 				connection.rollback();
 			} catch (SQLException e1) {
-				e1.printStackTrace();
+				throw new ParserException(e1.getMessage());
 			}
-			e.printStackTrace();
-		} 
+			throw new ParserException(e.getMessage());
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
+		}
 	}
 
-	private String getUniqueTableName() {
+	private String getUniqueTableName() throws ParserException {
 		String sql = "select max(id) from log_table_name";
 		String sqlInsert = "insert into log_table_name (tablename) values (?)";
 		Connection connection = null;
@@ -200,20 +235,31 @@ public class ParserDAOImpl implements ParserDAO {
 
 		} catch (SQLException e) {
 			try {
+				if(null!=connection)
 				connection.rollback();
 			} catch (SQLException e1) {
-			
+				throw new ParserException(e1.getMessage());
 			}
+			throw new ParserException(e.getMessage());
 			
-		} 
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
+		}
 		return table_name;
 	}
 	
-	public ResultObject storeResults(List<String> logList, String duration) {
+	public ResultObject storeResults(List<String> logList, String duration)throws ParserException {
+		
 		String tableName = getUniqueTableName();
 		createLogResultTable(tableName);
 		ResultObject resultObject = bulkInsertLogResult(logList, tableName, duration);
 		resultObject.setMessage("Result LOGS have been stored into table " + tableName);
+		
 		return resultObject;
 	}
 
@@ -221,7 +267,7 @@ public class ParserDAOImpl implements ParserDAO {
 		System.out.println(str);
 	}
 	
-	public ResultObject bulkInsertLogResult(List<String> logList, String tableName, String duration) {
+	public ResultObject bulkInsertLogResult(List<String> logList, String tableName, String duration)throws ParserException {
 		printLog("Going to persist logs to parser."+tableName+"  table ..... ");
 
 		ResultObject ro = new ResultObject(ParserConstant.ERROR_CODE);
@@ -273,6 +319,13 @@ public class ParserDAOImpl implements ParserDAO {
 
 		} catch (SQLException ex) {
 			throw new ParserException(ex.getMessage());
+		} finally {
+			try {
+				if(null!=connection)
+					connection.close();
+			}catch(Exception e) {
+				throw new ParserException(e.getMessage());
+			}
 		} 
 		return ro;
 	}

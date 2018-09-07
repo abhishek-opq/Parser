@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
+import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import com.ef.config.ParserConfig;
@@ -23,7 +24,7 @@ public class ParserMain {
 	 */
 	public static void main(String[] args) {
 		
-		args=new String[] {"--accesslog=D:\\Parser\\ex/access.log" ,"--startDate=2017-01-01.13:00:00", "--duration=hourly", "--threshold=100"};
+		args=new String[] {"--accesslog=E:\\Rater_ALL\\TEST_0t_SEP\\workspace\\test_files/access.log" ,"--startDate=2017-01-01.13:00:00", "--duration=hourly", "--threshold=100"};
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ParserConfig.class);
 		ParserService parserService=ctx.getBean(ParserService.class);
 		LogReaderService logReaderService=ctx.getBean(LogReaderService.class);
@@ -33,9 +34,15 @@ public class ParserMain {
 		/**
 		 * Creating request object from parameters entered in command prompt
 		 */
-		LogDataRequest logDataRequest =parserService.initLogData(args);
+		
+		LogDataRequest logDataRequest=new LogDataRequest();
+		try {
+			logDataRequest = parserService.initLogData(args);
+		} catch (ParserException e) {
+			throw new ParserException(e.getMessage());
+		}
 		/**
-		 * Validating input entered
+		 * Validating input 
 		 */
 		String errorMessage = validator.validate(logDataRequest);
 		if (!errorMessage.isEmpty()) {
@@ -54,14 +61,23 @@ public class ParserMain {
 		 * Inserting log data list into log table
 		 */
 		 
-		String message= parserService.insertLogData(logFileList);
+		try {
+			String message= parserService.insertLogData(logFileList);
+		} catch (ParserException e) {
+			throw new ParserException(e.getMessage());
+		}
 		/**
 		 * Getting out log data as per the input
 		 */
 		
 		
 		
-		List<String> logDataList =parserService.getLogData(logDataRequest);
+		List<String> logDataList;
+		try {
+			logDataList = parserService.getLogData(logDataRequest);
+		} catch (ParserException e) {
+			throw new ParserException(e.getMessage());
+		}
 		printLog(
 				"<==========================================LOG DATA BEGINS==========================================================>\n\n");
 		if (null != logDataList && !logDataList.isEmpty()) {
@@ -69,7 +85,13 @@ public class ParserMain {
 				printLog(logData);
 			}
 		} else {
-			throw new ParserException(messageSource.getMessage("RECORD.NOT.FOUND", null,null));
+			try {
+				throw new ParserException(messageSource.getMessage("RECORD.NOT.FOUND", null,null));
+			} catch (NoSuchMessageException e) {
+				throw new ParserException(e.getMessage());
+			} catch (ParserException e) {
+				throw new ParserException(e.getMessage());
+			}
 		}
 		printLog("\n\n");
 		printLog(
@@ -78,16 +100,18 @@ public class ParserMain {
 		 * Storing log results
 		 */
 		if (null != logDataList && !logDataList.isEmpty()) {
-			String messageStore = parserService.storeLogResult(logDataList, logDataRequest.getDuration());
+			String messageStore;
+			try {
+				messageStore = parserService.storeLogResult(logDataList, logDataRequest.getDuration());
+			} catch (ParserException e) {
+				throw new ParserException(e.getMessage());
+			}
 			printLog(messageStore);
 		}
 		
 		
 	}
 
-	private static void printLog(String str) {
-		System.out.println(str);
-	}
 	
 	
 	/**
@@ -115,5 +139,10 @@ public class ParserMain {
 		return String.valueOf(endDate);
 
 	}
+	
+	private static void printLog(String str) {
+		System.out.println(str);
+	}
+	
 
 }

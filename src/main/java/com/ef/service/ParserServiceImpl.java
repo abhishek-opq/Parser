@@ -22,7 +22,7 @@ public class ParserServiceImpl implements ParserService{
 	ParserDAO parserDAO;
 	@Autowired
 	private Environment env;
-	public  String insertLogData(List<String> logList) {
+	public  String insertLogData(List<String> logList) throws ParserException{
 		
 		ResultObject ro = parserDAO.bulkInsert(logList);
 		String message = null;
@@ -36,7 +36,7 @@ public class ParserServiceImpl implements ParserService{
 	}
 	
 	
-	public  List<String> getLogData(LogDataRequest logDataRequest) {
+	public  List<String> getLogData(LogDataRequest logDataRequest) throws ParserException{
 		ResultObject ro = parserDAO.getLogData(logDataRequest);
 		List<String> logList = null;
 		if (null != ro && ParserConstant.SUCCESS_CODE == ro.getCode()) {
@@ -48,12 +48,12 @@ public class ParserServiceImpl implements ParserService{
 	}
 	
 	
-	public String storeLogResult(List<String> logList, String duration) {
+	public String storeLogResult(List<String> logList, String duration)throws ParserException {
 		ResultObject ro = parserDAO.storeResults(logList, duration);
 		return ro.getMessage();
 	}
 	
-	public LogDataRequest initLogData(String[] arg) {
+	public LogDataRequest initLogData(String[] arg)throws ParserException {
 		if(arg.length<4) {
 			throw new ParserException(env.getProperty("VALID.COMMAND"));
 		}

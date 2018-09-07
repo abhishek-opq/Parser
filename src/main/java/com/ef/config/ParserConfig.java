@@ -1,6 +1,5 @@
 package com.ef.config;
 
-import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +28,14 @@ public class ParserConfig {
 	}
 	
 	
-	@Bean
+	@Bean(name="dataSource")
 	public DataSource dataSource() {
 		
 		DriverManagerDataSource dataSource=new DriverManagerDataSource();
 		
 		dataSource.setDriverClassName(env.getProperty("DRIVER.CLASS"));
 		dataSource.setUrl(env.getProperty("URL"));
-		dataSource.setUsername(env.getProperty("USERNAME"));
+		dataSource.setUsername(env.getProperty("DB.USERNAME"));
 		dataSource.setPassword(env.getProperty("PASSWORD"));
 		return dataSource;
 	}
