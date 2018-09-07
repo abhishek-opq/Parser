@@ -12,10 +12,16 @@
 	<name>parser</name>
 	<url>http://maven.apache.org</url>
 
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
 
+	<properties>
+		<project.build.sourceEncoding>
+			UTF-8</project.build.sourceEncoding>
+		<java.version>1.8</java.version>
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<servlet-api.version>3.1</servlet-api.version>
+		<maven.test.skip>true</maven.test.skip>
+	</properties>
 	<dependencies>
 
 
@@ -82,7 +88,10 @@
 				<configuration>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
+
 					</descriptorRefs>
+					<finalName>parser</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
 
@@ -101,9 +110,28 @@
 		</plugins>
 
 
-
+		<resources>
+			<resource>
+				<directory>${project.basedir}/src/main/java</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>**/*.properties</include>
+				</includes>
+			</resource>
+		</resources>
 
 	</build>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
