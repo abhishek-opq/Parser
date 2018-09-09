@@ -14,7 +14,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @Configuration
 @ComponentScan("com.ef")
-@PropertySource("message.properties")
+@PropertySource(value= {"message.properties","db.properties"})
 public class ParserConfig {
 	@Autowired
 	private Environment env;

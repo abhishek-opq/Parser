@@ -102,6 +102,7 @@
 							<goal>single</goal>
 						</goals>
 					</execution>
+					
 				</executions>
 
 
@@ -115,7 +116,8 @@
 				<directory>${project.basedir}/src/main/java</directory>
 				<filtering>true</filtering>
 				<includes>
-					<include>**/*.properties</include>
+					<include>**/message.properties</include>
+					<include>**/db.properties</include>
 				</includes>
 			</resource>
 		</resources>
